@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background: radial-gradient(circle at top left, #e0f2fe 0, #eef2ff 35%, #fee2e2 80%);
+  font-family: 'Inter', sans-serif;
+  color: #0f172a;
+}
+
+/* App-controlled dark theme (does NOT follow system theme) */
+body.dark {
+  background: radial-gradient(circle at top left, #020617 0, #020617 35%, #0f172a 80%);
+  color: #e5e7eb;
+}
+
+/* Card theming, driven purely by body.dark */
+.card {
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease,
+    transform 0.3s ease;
+}
+
+body.dark .card {
+  background-color: rgba(15, 23, 42, 0.8); /* approx slate-900/80 */
+  border-color: #1e293b; /* slate-800 */
+}
+
+body.dark .card-glass {
+  background-color: rgba(15, 23, 42, 0.6); /* approx slate-900/60 */
+  border-color: rgba(148, 163, 184, 0.5); /* softer border in dark */
+}
+
+/* Button focus ring offset in dark theme */
+body.dark .btn:focus {
+  /* keep same ring color but place offset against dark background */
+  box-shadow: 0 0 0 2px rgba(165, 180, 252, 0.9), 0 0 0 4px #020617;
+}
+
+/* Navbar theming */
+.nav-shell {
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+}
+
+body.dark .nav-shell {
+  background-color: rgba(15, 23, 42, 0.95);
+  color: #e5e7eb;
+}
+
+/* Tweak default gray nav text in dark mode for contrast */
+body.dark .nav-shell .text-gray-700 {
+  color: #e5e7eb;
+}
+
+body.dark .nav-shell .text-gray-400 {
+  color: #9ca3af;
+}
+
+/* Shared page container for consistent centering */
+.app-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 3rem;
+}
