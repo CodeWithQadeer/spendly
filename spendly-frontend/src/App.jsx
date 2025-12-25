@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import allRoutes from "./routes/allRoutes";
 import Navbar from "./components/Navbar";
 import GlobalAuthLoader from "./components/GlobalAuthLoader";
+import MobileBottomNav from "./components/MobileBottomNav";
 import { loadUserFromToken } from "./features/authSlice";
 import { fetchBalance } from "./features/balanceSlice";
 import { fetchTransactions } from "./features/transactionSlice";
@@ -69,6 +70,7 @@ function AppInner() {
       <Navbar />
       <GlobalAuthLoader />
       <GlobalShortcuts />
+      <MobileBottomNav />
       <Suspense fallback={<div className="p-4">Loading...</div>}>
         <Routes>
           {allRoutes.map((r, i) => (

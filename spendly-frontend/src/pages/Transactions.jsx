@@ -359,8 +359,8 @@ export default function Transactions() {
         </div>
       )}
 
-        {/* Transaction List */}
-      <div className="grid gap-5 max-w-2xl mx-auto">
+      {/* Transaction List */}
+      <div className="grid gap-5 max-w-2xl mx-auto mb-20 md:mb-6">
         {filteredList.length === 0 && <p className="text-gray-500">No transactions yet.</p>}
 
         {filteredList.map((t) => {

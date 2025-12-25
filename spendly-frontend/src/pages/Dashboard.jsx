@@ -72,6 +72,66 @@ export default function Dashboard() {
     return totals;
   }, [transactions]);
 
+  const now = new Date();
+  const thisMonthKey = `${now.getFullYear()}-${now.getMonth()}`;
+
+  const monthlySummary = useMemo(() => {
+    let income = 0;
+    let expense = 0;
+    const byCategory = {};
+
+    transactions.forEach((t) => {
+      const d = new Date(t.createdAt);
+      const key = `${d.getFullYear()}-${d.getMonth()}`;
+      if (key !== thisMonthKey) return;
+
+      const amount = Number(t.amount || 0);
+      if (t.type === "income") income += amount;
+      if (t.type === "expense") {
+        expense += amount;
+        const cat = t.category || "Other";
+        byCategory[cat] = (byCategory[cat] || 0) + amount;
+      }
+    });
+
+    const topCategory = Object.entries(byCategory).sort((a, b) => b[1] - a[1])[0];
+
+    return {
+      income,
+      expense,
+      net: income - expense,
+      topCategory: topCategory ? { name: topCategory[0], amount: topCategory[1] } : null,
+    };
+  }, [transactions, thisMonthKey]);
+
+  const last7Days = useMemo(() => {
+    const days = [];
+    for (let i = 6; i >= 0; i -= 1) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().slice(0, 10);
+      days.push({ key, date: d, total: 0 });
+    }
+
+    const indexByKey = Object.fromEntries(days.map((d, idx) => [d.key, idx]));
+
+    transactions.forEach((t) => {
+      if (t.type !== "expense") return;
+      const d = new Date(t.createdAt);
+      const key = d.toISOString().slice(0, 10);
+      const idx = indexByKey[key];
+      if (idx === undefined) return;
+      days[idx].total += Number(t.amount || 0);
+    });
+
+    const max = days.reduce((m, d) => Math.max(m, d.total), 0) || 1;
+
+    return days.map((d) => ({
+      ...d,
+      height: (d.total / max) * 100,
+    }));
+  }, [transactions]);
+
   return (
     <div className="app-shell animate-fadeIn">
 
@@ -318,6 +378,78 @@ export default function Dashboard() {
         </Card>
       </div>
 
+      {/* Monthly summary & simple 7-day chart */}
+      <div className="mt-10 grid gap-6 lg:grid-cols-2">
+        <Card className="bg-white/90">
+          <h3 className="text-xl font-bold mb-3">This Month Overview</h3>
+          <p className="text-gray-500 text-sm mb-4">
+            Income vs expenses for the current month.
+          </p>
+          <div className="grid grid-cols-3 gap-4 text-sm">
+            <div>
+              <p className="text-gray-500">Income</p>
+              <p className="text-emerald-600 text-lg font-bold">
+                ₹{Number(monthlySummary.income || 0).toFixed(2)}
+              </p>
+            </div>
+            <div>
+              <p className="text-gray-500">Expenses</p>
+              <p className="text-red-500 text-lg font-bold">
+                ₹{Number(monthlySummary.expense || 0).toFixed(2)}
+              </p>
+            </div>
+            <div>
+              <p className="text-gray-500">Net</p>
+              <p
+                className={`text-lg font-bold ${
+                  (monthlySummary.net || 0) >= 0
+                    ? "text-emerald-600"
+                    : "text-red-500"
+                }`}
+              >
+                ₹{Number(monthlySummary.net || 0).toFixed(2)}
+              </p>
+            </div>
+          </div>
+
+          {monthlySummary.topCategory && (
+            <div className="mt-4 rounded-lg bg-gray-50 px-3 py-2 text-xs text-gray-600 flex items-center justify-between">
+              <span>Top spending category</span>
+              <span className="font-semibold">
+                {monthlySummary.topCategory.name}: ₹
+                {Number(monthlySummary.topCategory.amount || 0).toFixed(2)}
+              </span>
+            </div>
+          )}
+        </Card>
+
+        <Card className="bg-white/90">
+          <h3 className="text-xl font-bold mb-3">Last 7 Days</h3>
+          <p className="text-gray-500 text-sm mb-4">
+            Daily expenses for the past week.
+          </p>
+
+          <div className="flex items-end gap-2 h-40">
+            {last7Days.map((d) => (
+              <div
+                key={d.key}
+                className="flex-1 flex flex-col items-center justify-end gap-1"
+              >
+                <div className="w-6 sm:w-7 rounded-full bg-indigo-100 overflow-hidden flex items-end">
+                  <div
+                    className="w-full bg-indigo-500 rounded-full transition-all"
+                    style={{ height: `${d.height}%` }}
+                  />
+                </div>
+                <span className="text-[10px] text-gray-500">
+                  {d.date.toLocaleDateString(undefined, { weekday: "short" })}
+                </span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+
       {/* Mobile Calculator */}
       <Link to="/calculator">
         <Card
@@ -334,7 +466,7 @@ export default function Dashboard() {
 
       {/* Recent Transactions on Dashboard */}
 
-      <div className="mt-10">
+      <div className="mt-10 mb-16 md:mb-4">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-2xl font-bold">Recent Transactions</h3>
           <Link
