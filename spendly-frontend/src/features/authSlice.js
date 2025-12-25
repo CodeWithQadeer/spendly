@@ -1,11 +1,20 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../services/api";
 
-export const loginUser = createAsyncThunk("auth/login", async (data) => {
-  const res = await api.post("/auth/login", data);
-  localStorage.setItem("auth-token", res.data.token);
-  return res.data.user;
-});
+export const loginUser = createAsyncThunk(
+  "auth/login",
+  async (data, thunkAPI) => {
+    try {
+      const res = await api.post("/auth/login", data);
+      localStorage.setItem("auth-token", res.data.token);
+      return res.data.user;
+    } catch (err) {
+      const message =
+        err?.response?.data?.message || "Invalid email or password";
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
 
 export const registerUser = createAsyncThunk(
   "auth/register",
@@ -21,11 +30,20 @@ export const registerUser = createAsyncThunk(
   }
 );
 
-export const googleLogin = createAsyncThunk("auth/google", async (token) => {
-  const res = await api.post("/auth/google", { token });
-  localStorage.setItem("auth-token", res.data.token);
-  return res.data.user;
-});
+export const googleLogin = createAsyncThunk(
+  "auth/google",
+  async (token, thunkAPI) => {
+    try {
+      const res = await api.post("/auth/google", { token });
+      localStorage.setItem("auth-token", res.data.token);
+      return res.data.user;
+    } catch (err) {
+      const message =
+        err?.response?.data?.message || "Google login failed. Please try again.";
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
 
 export const loadUserFromToken = createAsyncThunk(
   "auth/loadUserFromToken",

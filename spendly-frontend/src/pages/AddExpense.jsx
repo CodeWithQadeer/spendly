@@ -14,6 +14,13 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 
+function normalizeCategory(name) {
+  if (!name) return "Other";
+  const trimmed = name.trim();
+  if (!trimmed) return "Other";
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+}
+
 export default function AddExpense() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -50,10 +57,11 @@ export default function AddExpense() {
       return;
     }
 
-    const finalCategory =
+    const rawCategory =
       data.category === "Other" && customCategoryLabel
         ? customCategoryLabel
         : data.category;
+    const finalCategory = normalizeCategory(rawCategory);
 
     if (data.category === "Other" && !customCategoryLabel.trim()) {
       setError("Please enter a custom category name.");
@@ -119,6 +127,7 @@ export default function AddExpense() {
                   <button
                     key={c.label}
                     type="button"
+                    aria-label={`Select ${c.label} category`}
                     onClick={() => {
                       if (c.label === "Other") {
                         setData({

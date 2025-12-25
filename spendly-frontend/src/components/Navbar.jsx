@@ -42,7 +42,7 @@ export default function Navbar() {
     <nav className="nav-shell bg-white/70 backdrop-blur-lg shadow-md px-4 sm:px-6 py-3 sticky top-0 z-50">
       <div className="max-w-6xl mx-auto flex justify-between items-center">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-2" aria-label="Go to dashboard">
           <div className="h-9 w-9 rounded-2xl bg-gradient-to-tr from-indigo-500 via-sky-400 to-emerald-400 flex items-center justify-center shadow-card">
             <span className="text-white text-xl font-black">₹</span>
           </div>
@@ -74,6 +74,7 @@ export default function Navbar() {
           <button
             onClick={toggleTheme}
             className="flex items-center gap-2 text-gray-500 hover:text-gray-800 transition"
+            aria-label="Toggle color theme"
           >
             {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
           </button>
@@ -81,6 +82,7 @@ export default function Navbar() {
           <button
             onClick={handleLogout}
             className="flex items-center gap-2 text-red-500 hover:text-red-600 transition"
+            aria-label="Log out"
           >
             <LogOut size={20} /> Logout
           </button>
@@ -90,6 +92,7 @@ export default function Navbar() {
         <button
           className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition"
           onClick={() => setOpen(true)}
+          aria-label="Open navigation menu"
         >
           <Menu size={26} />
         </button>
@@ -103,7 +106,11 @@ export default function Navbar() {
       >
         <div className="p-4 flex justify-between items-center border-b">
           <h2 className="text-xl font-semibold">Menu</h2>
-          <button onClick={() => setOpen(false)} className="p-2 hover:bg-gray-100 rounded-lg">
+          <button
+            onClick={() => setOpen(false)}
+            className="p-2 hover:bg-gray-100 rounded-lg"
+            aria-label="Close navigation menu"
+          >
             <X size={24} />
           </button>
         </div>

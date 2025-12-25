@@ -32,7 +32,8 @@ import {
 
 export default function Transactions() {
   const dispatch = useDispatch();
-  const { list, history } = useSelector((s) => s.transactions);
+  const txState = useSelector((s) => s.transactions);
+  const { list, history, error: txError } = txState;
   // re-fetch when balance changes so income transactions show immediately
   const balance = useSelector((s) => s.balance.currentBalance);
 
@@ -74,6 +75,15 @@ export default function Transactions() {
   }, [list]);
 
   const net = totalAdded - totalSpent;
+
+  const distinctCategories = useMemo(() => {
+    const set = new Set();
+    list.forEach((t) => {
+      const label = t.category || (t.type === "income" ? "Added Money" : "Other");
+      set.add(label);
+    });
+    return Array.from(set).sort();
+  }, [list]);
 
   const filteredList = useMemo(() => {
     const now = new Date();
@@ -172,6 +182,20 @@ export default function Transactions() {
         </div>
       </div>
 
+        {/* Error banner for transactions */}
+        {txError && (
+          <div className="mb-4 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 flex items-center justify-between">
+            <span>{txError}</span>
+            <button
+              type="button"
+              onClick={() => dispatch(fetchTransactions())}
+              className="ml-3 text-xs font-semibold underline"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
         {/* Filters */}
         <div className="mb-6 grid gap-3 md:grid-cols-3 text-sm">
           <div>
@@ -194,12 +218,11 @@ export default function Transactions() {
               className="w-full rounded-lg border border-gray-300 px-3 py-2"
             >
               <option value="all">All</option>
-              <option value="Food">Food</option>
-              <option value="Travel">Travel</option>
-              <option value="Shopping">Shopping</option>
-              <option value="Home">Home</option>
-              <option value="Other">Other</option>
-              <option value="Added Money">Added Money</option>
+              {distinctCategories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
             </select>
           </div>
           <div>
@@ -420,7 +443,7 @@ export default function Transactions() {
                   updateTransaction({
                     id: editingTx._id,
                     updates: {
-                      category,
+                      category: (category || "").trim(),
                       note,
                     },
                   })

@@ -22,8 +22,11 @@ import { fetchTransactions } from "../features/transactionSlice";
 
 export default function Dashboard() {
   const dispatch = useDispatch();
-  const balance = useSelector((s) => s.balance.currentBalance);
-  const transactions = useSelector((s) => s.transactions.list || []);
+  const balanceState = useSelector((s) => s.balance);
+  const balance = balanceState.currentBalance;
+  const balanceError = balanceState.error;
+  const transactionsState = useSelector((s) => s.transactions);
+  const transactions = transactionsState.list || [];
 
   const [budgets, setBudgets] = useState(() => {
     if (typeof window === "undefined") return {};
@@ -35,10 +38,12 @@ export default function Dashboard() {
   });
   const [budgetsOpen, setBudgetsOpen] = useState(true);
 
+  // Keep as a safety net in case dashboard is the first screen after login
   useEffect(() => {
-    dispatch(fetchBalance());
-    dispatch(fetchTransactions());
-  }, [dispatch]);
+    if (!transactions.length) {
+      dispatch(fetchTransactions());
+    }
+  }, [dispatch, transactions.length]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -74,6 +79,20 @@ export default function Dashboard() {
       <h1 className="text-3xl font-extrabold mb-6 tracking-tight">
         Dashboard
       </h1>
+
+      {/* Error banner for balance */}
+      {balanceError && (
+        <div className="mb-4 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 flex items-center justify-between">
+          <span>{balanceError}</span>
+          <button
+            type="button"
+            onClick={() => dispatch(fetchBalance())}
+            className="ml-3 text-xs font-semibold underline"
+          >
+            Retry
+          </button>
+        </div>
+      )}
 
       {/* Balance Card (Cyber Neon Gradient) */}
       <div className="mb-8">

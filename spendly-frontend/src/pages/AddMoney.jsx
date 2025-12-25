@@ -13,6 +13,7 @@ export default function AddMoney() {
 
   const [amount, setAmount] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const submit = (e) => {
     e.preventDefault();
@@ -23,10 +24,13 @@ export default function AddMoney() {
     }
 
     setError("");
+    setLoading(true);
 
     dispatch(addMoney({ amount: Number(amount) }))
       .unwrap()
-      .then(() => navigate("/"));
+      .then(() => navigate("/"))
+      .catch(() => setError("Failed to add money. Please try again."))
+      .finally(() => setLoading(false));
   };
 
   return (
@@ -61,9 +65,10 @@ export default function AddMoney() {
           {/* Submit Button */}
           <Button
             type="submit"
-            className="mt-2 py-3 text-lg font-semibold shadow-md hover:shadow-lg transition"
+            disabled={loading}
+            className="mt-2 py-3 text-lg font-semibold shadow-md hover:shadow-lg transition disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Add Money
+            {loading ? "Adding..." : "Add Money"}
           </Button>
         </form>
       </Card>
