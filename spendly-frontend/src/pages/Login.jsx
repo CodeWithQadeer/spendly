@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { loginUser, googleLogin } from "../features/authSlice";
 import Input from "../components/UI/Input";
 import Button from "../components/UI/Button";
@@ -11,6 +11,8 @@ import { Lock, Mail } from "lucide-react";
 export default function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const { loading, error: authError } = useSelector((s) => s.auth);
 
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
@@ -28,7 +30,9 @@ export default function Login() {
     dispatch(loginUser(form))
       .unwrap()
       .then(() => navigate("/"))
-      .catch(() => setError("Invalid email or password"));
+      .catch((err) => {
+        setError(err || "Invalid email or password");
+      });
   };
 
   return (
@@ -41,9 +45,9 @@ export default function Login() {
         </h2>
 
         {/* Error Message */}
-        {error && (
+        {(error || authError) && (
           <p className="bg-red-100 text-red-600 px-4 py-2 rounded-lg mb-4 text-sm text-center font-medium">
-            {error}
+            {error || authError}
           </p>
         )}
 
@@ -78,9 +82,10 @@ export default function Login() {
           {/* Login Button */}
           <Button
             type="submit"
-            className="py-3 text-lg font-semibold shadow-md hover:shadow-lg transition"
+            disabled={loading}
+            className="py-3 text-lg font-semibold shadow-md hover:shadow-lg transition disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
           </Button>
         </form>
 
@@ -95,9 +100,14 @@ export default function Login() {
         <div className="flex justify-center">
           <GoogleLogin
             onSuccess={(res) => {
+              if (!res.credential) {
+                setError("Google login failed");
+                return;
+              }
               dispatch(googleLogin(res.credential))
+                .unwrap()
                 .then(() => navigate("/"))
-                .catch(() => setError("Google login failed"));
+                .catch((err) => setError(err || "Google login failed"));
             }}
             onError={() => setError("Google login failed")}
           />

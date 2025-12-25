@@ -27,24 +27,81 @@ export const googleLogin = createAsyncThunk("auth/google", async (token) => {
   return res.data.user;
 });
 
+export const loadUserFromToken = createAsyncThunk(
+  "auth/loadUserFromToken",
+  async (_, thunkAPI) => {
+    try {
+      const res = await api.get("/auth/me");
+      return res.data.user;
+    } catch (err) {
+      // If token is invalid, clear it so app doesn't get stuck
+      localStorage.removeItem("auth-token");
+      return thunkAPI.rejectWithValue(
+        err?.response?.data?.message || "Failed to load user"
+      );
+    }
+  }
+);
+
 const authSlice = createSlice({
   name: "auth",
   initialState: {
     user: null,
+    loading: false,
+    error: null,
   },
   reducers: {
     logout: (state) => {
       state.user = null;
+      state.loading = false;
+      state.error = null;
       localStorage.removeItem("auth-token");
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(loginUser.fulfilled, (state, action) => {
-      state.user = action.payload;
-    });
-    builder.addCase(googleLogin.fulfilled, (state, action) => {
-      state.user = action.payload;
-    });
+    builder
+      // email/password login
+      .addCase(loginUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(loginUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+      })
+      .addCase(loginUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Login failed";
+      })
+
+      // google login
+      .addCase(googleLogin.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(googleLogin.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+      })
+      .addCase(googleLogin.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Google login failed";
+      })
+
+      // load user on refresh using existing token
+      .addCase(loadUserFromToken.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(loadUserFromToken.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+      })
+      .addCase(loadUserFromToken.rejected, (state, action) => {
+        state.loading = false;
+        state.user = null;
+        state.error = action.payload || "Failed to restore session";
+      });
   },
 });
 

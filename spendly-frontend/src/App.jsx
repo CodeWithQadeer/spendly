@@ -1,7 +1,9 @@
 import { Suspense, useEffect } from "react";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import allRoutes from "./routes/allRoutes";
 import Navbar from "./components/Navbar";
+import { loadUserFromToken } from "./features/authSlice";
 
 function GlobalShortcuts() {
   const navigate = useNavigate();
@@ -39,9 +41,19 @@ function GlobalShortcuts() {
   return null;
 }
 
-export default function App() {
+function AppInner() {
+  const dispatch = useDispatch();
+
+  // On initial load, if we have a token, restore the user and core data
+  useEffect(() => {
+    const token = localStorage.getItem("auth-token");
+    if (token) {
+      dispatch(loadUserFromToken());
+    }
+  }, [dispatch]);
+
   return (
-    <BrowserRouter>
+    <>
       <Navbar />
       <GlobalShortcuts />
       <Suspense fallback={<div className="p-4">Loading...</div>}>
@@ -51,6 +63,14 @@ export default function App() {
           ))}
         </Routes>
       </Suspense>
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppInner />
     </BrowserRouter>
   );
 }
