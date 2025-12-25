@@ -1,6 +1,4 @@
 import axios from "axios";
-import { store } from "../app/store";
-import { logout } from "../features/authSlice";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3033";
 
@@ -20,8 +18,11 @@ api.interceptors.response.use(
   (error) => {
     const status = error?.response?.status;
     if (status === 401) {
-      // Clear redux auth state + token; ProtectedRoute will send user to /login
-      store.dispatch(logout());
+      // Clear token and send user back to login; Redux will naturally reset on reload
+      localStorage.removeItem("auth-token");
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
     }
     return Promise.reject(error);
   }
