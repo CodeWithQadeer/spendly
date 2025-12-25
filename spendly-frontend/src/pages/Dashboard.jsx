@@ -282,10 +282,9 @@ export default function Dashboard() {
           {transactions.length === 0 ? (
             <p className="text-gray-500 text-sm">Add some transactions to see insights.</p>
           ) : (
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-2 text-sm max-h-72 overflow-y-auto pr-1">
               {Object.entries(categoryTotals)
                 .sort((a, b) => b[1] - a[1])
-                .slice(0, 3)
                 .map(([label, value]) => (
                   <li key={label} className="flex items-center justify-between">
                     <span className="font-medium flex items-center gap-2">
