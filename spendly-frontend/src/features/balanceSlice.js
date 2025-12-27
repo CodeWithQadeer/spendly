@@ -1,5 +1,7 @@
 // src/features/balanceSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { addExpense } from "./transactionSlice";
+
 import api from "../services/api";
 import {
   fetchTransactions,
@@ -115,6 +117,11 @@ const balanceSlice = createSlice({
         }
       })
       .addCase(applyRecurring.fulfilled, (state, action) => {
+        if (action.payload && action.payload.balance != null) {
+          state.currentBalance = action.payload.balance;
+        }
+      })
+     .addCase(addExpense.fulfilled, (state, action) => {
         if (action.payload && action.payload.balance != null) {
           state.currentBalance = action.payload.balance;
         }
